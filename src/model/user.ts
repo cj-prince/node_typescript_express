@@ -1,10 +1,20 @@
 import { Model, Sequelize, DataTypes } from 'sequelize';
+import bcrypt from 'bcrypt'
 export default class User extends Model {
-  public id?: number;
+  public id!: number;
   public name!: string;
   public email!: string;
-  public birthdate?: Date;
-  public username?: string;
+  public date_of_birth?: Date;
+  public username!: string;
+  public password!: string;
+
+  static async encryptPassword(password: string): Promise<string> {
+    return await bcrypt.hash(password, 10);
+  }
+
+  static async validatePassword(password: string, encryptPassword: string) {
+    return await bcrypt.compare(password, encryptPassword);
+  }
 }
 export const UserMap = (sequelize: Sequelize) => {
   User.init(
@@ -29,13 +39,19 @@ export const UserMap = (sequelize: Sequelize) => {
       username: {
         type: DataTypes.STRING(100),
         allowNull: false,
-        unique: true,
+      },
+      password: {
+        type: DataTypes.STRING,
+        allowNull: false,
       },
     },
     {
       sequelize,
       tableName: 'users',
-      timestamps: false,
+      timestamps: true,
+      underscored: true,
+      createdAt: 'created_at',
+      updatedAt: 'updated_at', 
     }
   );
   User.sync();

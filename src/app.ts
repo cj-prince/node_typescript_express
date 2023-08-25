@@ -16,9 +16,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(Userrouter);
 
 
-app.get('/', (req, res) => {
-  res.send('Hello, Express with TypeScript!');
-});
+// app.get('/', (req, res) => {
+//   res.send('Hello, Express with TypeScript!');
+// });
 
 
 
