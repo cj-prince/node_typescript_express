@@ -1,6 +1,7 @@
 import User, { UserMap } from '../model/user';
 import { sequelize } from '../config/database';
 import { Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
 
 export const getAllUserControllers = async (req: Request, res: Response) => {
   UserMap(sequelize);
@@ -15,11 +16,12 @@ export const createUserController = async (req: Request, res: Response) => {
   await sequelize.authenticate();
   await sequelize.sync();
   let {name, email, date_of_birth, username,password} = req.body;
+  const hashedPassword = await User.encryptPassword(password);
   const result = await User.create({name: name,
       email: email,
       date_of_birth: date_of_birth,
       username: username,
-      password: password});
+      password: hashedPassword});
   res.status(201).json({ message: 'User Created successfully', user: result });
 };
 
@@ -28,11 +30,21 @@ export const logUserController = async (req: Request, res: Response) => {
   await sequelize.authenticate();
   await sequelize.sync();
   let { email, password} = req.body;
-  const result = await User.create({
-    email: email,
-    password: password,
+  const user = await User.findOne({ where: { email } });
+
+  if (!user) {
+    return res.status(401).json({ message: 'User not found' });
+  }
+  const passwordMatch = await User.validatePassword(password, user.password);
+
+  if (!passwordMatch) {
+    return res.status(401).json({ message: 'Invalid password' });
+  }
+  const token = jwt.sign({ userId: user.id }, `${process.env.SECRET_TOKEN}`, {
+    expiresIn: '1h',
   });
-  res.status(201).json({ message: 'User Logged In successfully', user: result });
+
+  res.status(200).json({ message: 'User logged in successfully', token });
 };
 
 export const getSingleUserController = async (req: Request, res: Response) => {

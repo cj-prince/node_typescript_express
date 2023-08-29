@@ -1,7 +1,6 @@
 # dependencies
 /.pnp
 .pnp.js
-node_modules
 
 # testing
 /coverage
@@ -12,6 +11,8 @@ node_modules
 
 # local env files
 .env
+/node_modules
+node_modules
 
 # Log files
 npm-debug.log*
